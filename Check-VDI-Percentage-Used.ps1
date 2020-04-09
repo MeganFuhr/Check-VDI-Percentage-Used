@@ -3,7 +3,7 @@
 # Date: 2020.01.09
 # Description: This script will review all single user OS delivery groups that do not have the word TEST in the name, pull the desktops that are not in maintenance mode
 #               and see if the capacity used is greater than 85%.  If so, an email wll be sent.  Subsequent runs will update the recipients only if a delivery group has
-#               recovered or a new delivery group is experiencing usage of over 95%.  It leverages a .csv to keep track of previous runs.
+#               recovered or a new delivery group is experiencing usage of over 85%.  It leverages a .csv to keep track of previous runs.
 
 
 begin {
