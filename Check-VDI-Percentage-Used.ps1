@@ -72,7 +72,7 @@ Process {
 
         foreach ($group in $deliverygroups) {
             $desktops = Get-BrokerDesktop -AdminAddress $ddc -MaxRecordCount 10000 -DesktopGroupName $group.name | where {$_.InMaintenanceMode -eq $false}
-            $inuse = ($desktops | Where {$_.summaryState -notmatch "Available"}).count
+            $inuse = ($desktops | Where {$_.summaryState -notmatch "Available" -and $_.summaryState -notmatch "Off"}).count
             $total = $desktops.Count
 
             if ($inuse -gt ($total * (0.85))) {
