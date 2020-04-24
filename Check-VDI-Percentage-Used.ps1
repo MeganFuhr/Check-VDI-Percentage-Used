@@ -3,8 +3,9 @@
 # Date: 2020.01.09
 # Description: This script will review all single user OS delivery groups that do not have the word TEST in the name, pull the desktops that are not in maintenance mode
 #               and see if the capacity used is greater than 85%.  If so, an email wll be sent.  Subsequent runs will update the recipients only if a delivery group has
-#               recovered or a new delivery group is experiencing usage of over 85%.  It leverages a .csv to keep track of previous runs.
+#               recovered or a new delivery group is experiencing usage of over 95%.  It leverages a .csv to keep track of previous runs.
 
+#requires -Version 5
 
 begin {
     try {
@@ -68,18 +69,24 @@ begin {
 
 Process {
     Foreach ($ddc in $ddcs) {
-        $deliverygroups = Get-BrokerDesktopGroup -AdminAddress $ddc -MaxRecordCount 10000 | where {(((($_.SessionSupport -eq "SingleSession") -and ($_.IsRemotePC -eq $false)) -and ($_.Name -notlike "*test*")))}
-
+        $deliverygroups = Get-BrokerDesktopGroup -AdminAddress $ddc -MaxRecordCount 10000 | `
+                where {(((($_.SessionSupport -eq "SingleSession") `
+                    -and ($_.IsRemotePC -eq $false)) `
+                    -and ($_.Name -notlike "*test*") `
+                    -and ($_.DesktopKind -eq "Shared") `
+                ))}
         foreach ($group in $deliverygroups) {
-            $desktops = Get-BrokerDesktop -AdminAddress $ddc -MaxRecordCount 10000 -DesktopGroupName $group.name | where {$_.InMaintenanceMode -eq $false}
-            $inuse = ($desktops | Where {$_.summaryState -notmatch "Available" -and $_.summaryState -notmatch "Off"}).count
-            $total = $desktops.Count
+            $desktopsTotal = Get-BrokerDesktop -AdminAddress $ddc -MaxRecordCount 10000 -DesktopGroupName $group.name #| where {$_.InMaintenanceMode -eq $false}
+            $desktopsAvailable = $desktopsTotal | where {$_.InMaintenanceMode -eq $false}
+            $inuse = ($desktopsAvailable | Where {$_.summaryState -notmatch "Available" -and $_.summaryState -notmatch "Off"}).count
+            $total = $desktopsAvailable.Count
 
             if ($inuse -gt ($total * (0.85))) {
                 
                 $temp = New-Object psobject -Property @{
                     InUse = $inuse
-                    Total = $total
+                    TotalUsable = $total
+                    Total = $DesktopsTotal.count
                     DDC = $ddc
                     DeliveryGroup = $group.name
                 }
@@ -126,12 +133,13 @@ end {
             $html += "<tr>"
             $html += "<th>Delivery Group</th>"
             $html += "<th>In Use</th>"
+            $html += "<th>Total Available</th>"
             $html += "<th>Total</th>"
             $html += "<th>DDC</th>"
             $html += "</tr>"
 
             foreach ($b in $newBadList) {
-                $html += "<tr><td>$($b.DeliveryGroup)</td><td>$($b.InUse)</td><td>$($b.Total)</td><td>$($b.DDC)</td></tr>"
+                $html += "<tr><td>$($b.DeliveryGroup)</td><td>$($b.InUse)</td><td>$($b.TotalUsable)</td><td>$($b.Total)</td><td>$($b.DDC)</td></tr>"
             }
 
             $html += "</table>"
@@ -149,7 +157,7 @@ end {
             $html += "</tr>"
 
             foreach ($c in $stillbadlist) {
-                $html += "<tr><td>$($c.DeliveryGroup)</td><td>$($c.InUse)</td><td>$($c.Total)</td><td>$($c.DDC)</td></tr>"
+                $html += "<tr><td>$($c.DeliveryGroup)</td><td>$($c.InUse)</td><td>$($b.TotalUsable)</td><td>$($b.Total)</td><td>$($c.DDC)</td></tr>"
             }
 
             $html += "</table>"
