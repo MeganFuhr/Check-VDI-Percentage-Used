@@ -152,6 +152,7 @@ end {
             $html += "<tr>"
             $html += "<th>Delivery Group</th>"
             $html += "<th>In Use</th>"
+            $html += "<th>Total Available</th>"
             $html += "<th>Total</th>"
             $html += "<th>DDC</th>"
             $html += "</tr>"
