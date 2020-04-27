@@ -107,8 +107,8 @@ Process {
         #Compare output to previousbadlist.  Split into 3 variables
         try {
             $recovered = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup | where {$_.SideIndicator -eq "=>"} | Select DDC, DeliveryGroup
-            $stillbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -IncludeEqual -PassThru | where {$_.SideIndicator -eq "=="} | Select DDC, DeliveryGroup, Total, InUse
-            $newbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -PassThru | where {$_.SideIndicator -eq "<="} | Select DDC, DeliveryGroup, Total, InUse
+            $stillbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -IncludeEqual -PassThru | where {$_.SideIndicator -eq "=="} | Select DDC, DeliveryGroup, Total, InUse, TotalUsable
+            $newbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -PassThru | where {$_.SideIndicator -eq "<="} | Select DDC, DeliveryGroup, Total, InUse, TotalUsable
         }
         catch {
             $recovered = @()
@@ -157,7 +157,7 @@ end {
             $html += "</tr>"
 
             foreach ($c in $stillbadlist) {
-                $html += "<tr><td>$($c.DeliveryGroup)</td><td>$($c.InUse)</td><td>$($b.TotalUsable)</td><td>$($b.Total)</td><td>$($c.DDC)</td></tr>"
+                $html += "<tr><td>$($c.DeliveryGroup)</td><td>$($c.InUse)</td><td>$($c.TotalUsable)</td><td>$($c.Total)</td><td>$($c.DDC)</td></tr>"
             }
 
             $html += "</table>"
