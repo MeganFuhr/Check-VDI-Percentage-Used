@@ -108,8 +108,7 @@ Process {
         try {
             $recovered = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup | where {$_.SideIndicator -eq "=>"} | Select DDC, DeliveryGroup
             $stillbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -IncludeEqual -PassThru | where {$_.SideIndicator -eq "=="} | Select DDC, DeliveryGroup, Total, InUse, TotalUsable
-            $newbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -PassThru | where {$_.SideIndicator -eq "<="} | Select DDC, DeliveryGroup, Total, InUse, TotalUsable
-        }
+            $newbadlist = Compare-Object -ReferenceObject $output -DifferenceObject $previousBadList -Property DDC, DeliveryGroup -PassThru | where {$_.SideIndicator -eq "<="} | Select DDC, DeliveryGroup, Total, InUse, TotalUsable}
         catch {
             $recovered = @()
             $stillbadlist = @()
